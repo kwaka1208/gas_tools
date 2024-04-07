@@ -1,22 +1,61 @@
+const owner = ''
+
+function main() {
+  folderId = ''
+  removeFolderPermissions(folderId)
+}
+
 function removeFolderPermissions(folderId) {
   var folder = DriveApp.getFolderById(folderId);
   removePermissionsRecursive(folder);
 }
 
 function removePermissionsRecursive(folder) {
-  // Remove permissions for the folder itself
-  var permissions = folder.getSharingAccess();
-  if (permissions != DriveApp.Access.NONE) {
-    folder.setSharing(DriveApp.Access.NONE, DriveApp.Permission.NONE);
+  console.log('start folder: ' + folder.getName())
+  // 自分がオーナーのフォルダーだけ処理する
+  if (folder.getOwner().getEmail() == owner) {
+    folder.setSharing(DriveApp.Access.ANYONE, DriveApp.Permission.NONE);
+    var editors = folder.getEditors()
+    for (editor of editors) {
+      var target = editor.getEmail()
+      if (target != owner) {
+        folder.removeEditor(target)
+        console.log('removeEditor: ' + target)
+      }
+    }
+    var viewers = folder.getViewers()
+    for (viewer of viewers) {
+      var target = viewer.getEmail()
+      if (target != owner) {
+        folder.removeViewer(target)
+        console.log('removeViewer: ' + target)
+      }
+    }
+
   }
-  
+
   // Remove permissions for files in the folder
   var files = folder.getFiles();
   while (files.hasNext()) {
     var file = files.next();
-    var filePermissions = file.getSharingAccess();
-    if (filePermissions != DriveApp.Access.NONE) {
-      file.setSharing(DriveApp.Access.NONE, DriveApp.Permission.NONE);
+    if (file.getOwner().getEmail() == owner) {
+      file.setSharing(DriveApp.Access.ANYONE, DriveApp.Permission.NONE);
+      var editors = file.getEditors()
+      for (editor of editors) {
+        var target = editor.getEmail()
+        if (target != owner) {
+          file.removeEditor(target)
+          console.log('removeEditor: ' + target)
+        }
+      }
+      var viewers = file.getViewers()
+      for (viewer of viewers) {
+        var target = viewer.getEmail()
+        if (target != owner) {
+          file.removeViewer(target)
+          console.log('removeViewer: ' + target)
+        }
+      }
     }
   }
   
